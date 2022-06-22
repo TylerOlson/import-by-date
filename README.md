@@ -7,3 +7,5 @@ I first used Google Takeout to download all of my Google Photos. When I moved al
 Another issue is that Android devices connect as an MTP device and not a mass storage device so I can't move a file as I would any other file on a letter drive. After some digging the only solution I found was to host an FTP server on my phone using Solid Explorer and then connect to that using a python library.
 
 PAIN IN THE ASS
+
+Just kidding apparently there is ADB transfer...
