@@ -8,4 +8,4 @@ Another issue is that Android devices connect as an MTP device and not a mass st
 
 PAIN IN THE ASS
 
-Just kidding apparently there is ADB transfer...
+Just kidding apparently there is ADB transfer...how did I not know this before.

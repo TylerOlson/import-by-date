@@ -1,15 +1,14 @@
 import argparse
 import os
-import sys
 from datetime import datetime
 import shutil
-import pathlib
 import tkinter as tk
 from tkinter import filedialog
 import ftplib
 import time
 import subprocess
 from pathlib import Path
+from tqdm.auto import tqdm
 
 
 def main():
@@ -55,6 +54,8 @@ def main():
     if args.ftp:
         server.close()
 
+    print("Done!")
+
 
 def get_all_files(picture_path):
     all_files = []
@@ -83,48 +84,38 @@ def copy_files(all_files, destination_folder):
     if not os.path.isdir(destination_folder):
         print("Not found")
         return
-    for file_to_move in all_files:
-        full_destination_folder = os.path.join(
-            destination_folder, file_to_move['filename'])
+    for file_to_move in tqdm(all_files, position=0, leave=True):
+        full_destination_folder = os.path.join(destination_folder, file_to_move['filename'])
         os.makedirs(os.path.dirname(destination_folder), exist_ok=True)
-
-        print("Copying " + file_to_move['full_path'] +
-              " to " + full_destination_folder)
+        progress = str(all_files.index(file_to_move)+1) + " of " + str(len(all_files))
+        tqdm.write(progress + " Copying " + file_to_move['filename'] + " to " + full_destination_folder)
         shutil.copyfile(file_to_move['full_path'], full_destination_folder)
         shutil.copystat(file_to_move['full_path'], full_destination_folder)
-        print("Copied " +
-              file_to_move['full_path'] + " to " + full_destination_folder)
 
 
 def copy_files_ftp(all_files, server):
-    for file_to_move in all_files:
-        final_path = os.path.join(
-            'DCIM', 'Restored', file_to_move['filename'])
-        print("Copying " + final_path + " to FTP server (" +
-              str(all_files.index(file_to_move)) + " of " + str(len(all_files)))
+    for file_to_move in tqdm(all_files, position=0, leave=True):
+        final_path = os.path.join('DCIM', 'Restored', file_to_move['filename'])
+        progress = str(all_files.index(file_to_move)+1) + " of " + str(len(all_files))
+
+        tqdm.write(progress + " Copying " + final_path + " to FTP server")
         binary = open(file_to_move['full_path'], 'rb')
         print(server.storbinary("STOR " + final_path, binary))
         binary.close()
-        print("Copied " + final_path + " to FTP server (" +
-              str(all_files.index(file_to_move)) + " of " + str(len(all_files)))
         time.sleep(1)
 
 
 def copy_files_adb(all_files):
-    for file_to_move in all_files:
-        final_path = os.path.join(
-            'storage', 'emulated', '0', 'Pictures', 'Restored', file_to_move['filename'])
-        print("Copying " + file_to_move['filename'] + " to phone (" +
-              str(all_files.index(file_to_move)+1) + " of " + str(len(all_files)))
-        subprocess.call(
-            'adb push "' + file_to_move['full_path'] + '" "' + final_path + '"', shell=True)
-        print("Copied " + file_to_move['filename'] + " to phone (" +
-              str(all_files.index(file_to_move)+1) + " of " + str(len(all_files)))
+    for file_to_move in tqdm(all_files, position=0, leave=True):
+        final_path = os.path.join('storage', 'emulated', '0', 'DCIM', 'Restored', file_to_move['filename'])
+        progress = str(all_files.index(file_to_move)+1) + " of " + str(len(all_files))
+        tqdm.write(progress + " Copying " + file_to_move['filename'] + " to phone")
+        subprocess.call('adb push "' + file_to_move['full_path'] + '" "' + final_path + '"', shell=True)
 
         f = open("wrote_files.txt", "a")
         f.write(file_to_move['full_path']+"\n")
         f.close()
-        time.sleep(0.5)
+        time.sleep(1)
 
 
 def draw_file_dialog():
